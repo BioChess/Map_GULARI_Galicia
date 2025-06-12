@@ -86,17 +86,16 @@ if (length(imap$x$calls) == 0) {
   imap <- imap %>% addControl(html = "Sin datos recientes para mostrar", position = "topright")
 }
 
-#if (file.exists("docs/index.html")) file.remove("docs/index.html")
-#if (dir.exists("docs/index_files")) unlink("docs/index_files", recursive = TRUE)
+if (file.exists("docs/index.html")) file.remove("docs/index.html")
+if (dir.exists("docs/index_files")) unlink("docs/index_files", recursive = TRUE)
 
 # Guardar el mapa correctamente
-#if (!dir.exists("docs")) {
-#  dir.create("docs")
-#}
-saveWidget(imap, file = "index.html", selfcontained = TRUE)
-#saveWidget(imap, file = "docs/index.html", selfcontained = FALSE, libdir = "docs/index_files")
-cat(sprintf("\n<!-- Última actualización: %s -->\n", timestamp),
-    file = "index.html", append = TRUE)
+if (!dir.exists("docs")) {
+  dir.create("docs")
+}
+saveWidget(imap, file = "docs/index.html", selfcontained = FALSE, libdir = "docs/index_files")
+cat(sprintf("\n<!-- Última actualización: %s -->\n", timestamp), 
+    file = "docs/index.html", append = TRUE)
 
 
 
