@@ -18,7 +18,7 @@ jobs:
     - name: Set up R
       uses: r-lib/actions/setup-r@v2
       with:
-        r-version: '4.3'  # Especifica una versión concreta
+        r-version: '4.3'  # Versión específica de R
 
     - name: Install system dependencies
       run: |
@@ -34,15 +34,18 @@ jobs:
 
     - name: Instalar paquetes R
       run: |
-        Rscript -e 'install.packages(c("pacman", "remotes"), repos="https://cloud.r-project.org")'
+        Rscript -e 'install.packages(c("pacman", "remotes", "htmlwidgets"), repos="https://cloud.r-project.org")'
         Rscript -e 'pacman::p_load(dplyr, lubridate, leaflet, htmlwidgets, sf, shiny)'
         Rscript -e 'if (!"move" %in% installed.packages()[,"Package"]) remotes::install_version("move", version = "4.0.6", repos = "http://cran.us.r-project.org")'
+        Rscript -e 'packageVersion("htmlwidgets")'  # Verificar versión
 
-    - name: Limpiar archivos anteriores
+    - name: Preparar entorno
       run: |
+        # Crear y asegurar permisos en docs
+        mkdir -p docs
+        chmod -R 755 docs
         rm -f docs/index.html
         rm -rf docs/index_files
-        mkdir -p docs
 
     - name: Descargar datos de Movebank
       run: |
@@ -58,28 +61,28 @@ jobs:
 
     - name: Generar mapa interactivo
       run: |
-        Rscript 01_Interactive_map.R
+        echo "=== Versión de R y paquetes ==="
+        Rscript -e 'sessionInfo()'
         
-        # Verificaciones exhaustivas
+        echo "=== Generando mapa ==="
+        Rscript --verbose 01_Interactive_map.R
+        
+        echo "=== Verificando salida ==="
         if [ ! -f "docs/index.html" ]; then
           echo "::error::El archivo docs/index.html no se generó"
           ls -R docs/  # Listar contenido para debug
           exit 1
         fi
         
-        if [ ! -d "docs/index_files" ]; then
-          echo "::error::No se generó la carpeta docs/index_files"
+        if [ ! -d "docs/index_files" ] || [ -z "$(ls -A docs/index_files)" ]; then
+          echo "::error::La carpeta docs/index_files no se generó correctamente"
+          echo "Contenido de docs/:"
+          ls -l docs/
           exit 1
         fi
-
-    - name: Verificar estructura de archivos
-      run: |
-        echo "Contenido de docs/:"
-        ls -l docs/
-        echo "Contenido de docs/index_files:"
-        ls -l docs/index_files/
-        [ -s docs/index.html ] || exit 1
-        [ -d docs/index_files ] || exit 1
+        
+        echo "=== Estructura generada correctamente ==="
+        ls -R docs/
 
     - name: Subir cambios a GitHub
       run: |
