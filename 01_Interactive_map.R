@@ -90,7 +90,6 @@ if (file.exists("docs/index.html")) file.remove("docs/index.html")
 if (dir.exists("docs/index_files")) unlink("docs/index_files", recursive = TRUE)
 
 # Guardar el mapa correctamente
-# Añade al inicio del script:
 if (!dir.exists("docs")) {
   dir.create("docs", recursive = TRUE, showWarnings = FALSE)
 }
