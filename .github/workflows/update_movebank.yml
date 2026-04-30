@@ -30,7 +30,8 @@ jobs:
           libgdal-dev \
           pandoc \
           libudunits2-dev \
-          libproj-dev
+          libproj-dev \
+          libuv1-dev 
 
     - name: Instalar paquetes R
       run: |
