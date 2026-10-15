@@ -13,7 +13,7 @@ gps.df <- read.csv(latest_file)
 gps.df$datetimeGMT <- as.POSIXct(gps.df$datetimeGMT, format="%Y-%m-%d %H:%M:%S", tz="GMT")
 
 # Filtrar datos de los últimos 2 días
-lst_days <- as.POSIXct(Sys.time(), tz="GMT") - (2 * 24 * 60 * 60)  # Hace 2 días
+lst_days <- as.POSIXct(Sys.time(), tz="GMT") - (3 * 24 * 60 * 60)  # Hace 2 días
 gps.df2 <- gps.df %>% filter(datetimeGMT >= lst_days)
 
 # Crear la paleta de colores para cada birdID
@@ -76,7 +76,7 @@ for (bird in grupos) {
 timestamp <- format(Sys.time(), "%Y%m%d_%H%M", tz = "GMT", usetz = TRUE)
 
 # Crear texto HTML para mostrar en el mapa
-update_label <- paste0("Última actualización: ", format(Sys.time(), "%d-%m-%Y %H:%M", tz = "GMT", usetz = TRUE))
+update_label <- paste0("Last update: ", format(Sys.time(), "%d-%m-%Y %H:%M", tz = "GMT", usetz = TRUE))
 
 # Añadir el control al mapa (abajo a la derecha)
 imap <- imap %>%
@@ -91,10 +91,33 @@ if (dir.exists("docs/index_files")) unlink("docs/index_files", recursive = TRUE)
 
 # Guardar el mapa correctamente
 if (!dir.exists("docs")) {
-  dir.create("docs")
+  dir.create("docs", recursive = TRUE, showWarnings = FALSE)
 }
+
 cat(sprintf("\n<!-- Última actualización: %s -->\n", timestamp),
     file = "docs/index.html", append = TRUE)
+
+
+# Modifica la parte final del script donde guardas el mapa:
+tryCatch({
+  saveWidget(imap, 
+             file = "docs/index.html", 
+             selfcontained = FALSE, 
+             libdir = "index_files",  # Importante: sin la ruta docs/
+             title = "Mapa GULARI Galicia")
+  
+  # Mover los archivos a la ubicación correcta
+  if(dir.exists("index_files")) {
+    file.rename("index_files", "docs/index_files")
+  }
+  
+  cat(sprintf("\n<!-- Última actualización: %s -->\n", timestamp), 
+      file = "docs/index.html", append = TRUE)
+}, error = function(e) {
+  message("ERROR al guardar el widget: ", e$message)
+  quit(status = 1)
+})
+
 
 
 
